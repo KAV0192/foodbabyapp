@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "6027262519",
+    "firebase_url": "https://prikormapp-default-rtdb.firebaseio.com",
+    "project_id": "prikormapp",
+    "storage_bucket": "prikormapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:6027262519:android:2db0dcffa810f291b4ddb2",
+        "android_client_info": {
+          "package_name": "com.example.myapplicationtryagain"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjIV7LBOQYhc_QoB46ksB0lVqxmkY5_KQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
