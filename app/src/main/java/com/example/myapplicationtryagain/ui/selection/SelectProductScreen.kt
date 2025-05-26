@@ -10,16 +10,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplicationtryagain.model.Product
+import com.example.myapplicationtryagain.model.FoodDiaryEntry
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectProductScreen(
     navController: NavController,
-    onProductSelected: (Product) -> Unit
+    userId: String = "test_user",
+    selectedDate: LocalDate,
+    mealType: String
 ) {
     var products by remember { mutableStateOf<List<Product>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -33,25 +37,30 @@ fun SelectProductScreen(
         TopAppBar(title = { Text("Выбор продукта") })
     }) { padding ->
         if (isLoading) {
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .padding(padding), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator()
             }
         } else {
-            LazyColumn(modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
                 items(products.size) { index ->
                     val product = products[index]
                     ListItem(
                         headlineContent = { Text(product.name) },
                         supportingContent = { Text("${product.agemin}+ мес") },
-                        modifier = Modifier
-                            .clickable {
-                                onProductSelected(product)
-                                navController.popBackStack()
-                            }
+                        modifier = Modifier.clickable {
+                            // Сохраняем в Firebase
+                            saveProductToDiary(userId, selectedDate.toString(), mealType, product)
+                            navController.popBackStack()
+                        }
                     )
                     Divider()
                 }
@@ -69,4 +78,17 @@ suspend fun loadProductsFromFirebase(): List<Product> = withContext(Dispatchers.
         e.printStackTrace()
         emptyList()
     }
+}
+
+fun saveProductToDiary(userId: String, date: String, mealType: String, product: Product) {
+    val entryId = "entry_${System.currentTimeMillis()}"
+    val entry = FoodDiaryEntry(
+        productId = product.id.toString(),
+        name = product.name,
+        amount = "100 г", // по умолчанию, можно будет менять
+        mealtype = mealType
+    )
+    val ref = FirebaseDatabase.getInstance()
+        .getReference("food_diary/$userId/$date/$mealType/$entryId")
+    ref.setValue(entry)
 }

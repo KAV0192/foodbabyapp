@@ -47,7 +47,7 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
                     WelcomeScreen(navController = navController)
                 }
                 composable(Screen.DailyLog.route) {
-                    FoodDiaryScreen(navController)
+                    FoodDiaryScreen()
                 }
                 composable(Screen.Recipes.route) {
                     RecipesScreen(navController = navController)
@@ -58,15 +58,13 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
                 composable(Screen.RecipesList.route) {
                     RecipesListScreen(navController = navController)
                 }
-                composable(Screen.SelectProduct.route) {
-                    SelectProductScreen(
-                        navController = navController,
-                        onProductSelected = { product ->
-                            // TODO: добавить логику добавления продукта
-                            navController.popBackStack()
-                        }
-                    )
+                composable("select_product_screen/{date}/{mealType}") { backStackEntry ->
+                    val dateStr = backStackEntry.arguments?.getString("date")!!
+                    val mealType = backStackEntry.arguments?.getString("mealType")!!
+                    val date = LocalDate.parse(dateStr)
+                    SelectProductScreen(navController, selectedDate = date, mealType = mealType)
                 }
+
 
                 composable(Screen.SelectRecipe.route) {
                     SelectRecipeScreen(
