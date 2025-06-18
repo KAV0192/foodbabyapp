@@ -1,23 +1,25 @@
 [versions]
 agp = "8.9.2"
-compose = "2.2.0"
 core = "1.1.1"
 firebaseBom = "32.8.1"
 kotlin = "2.0.0"
 coil = "2.5.0"
-composeBom = "2025.05.00"
+composeBom = "2025.06.00"
 coreKtx = "1.16.0"
 activityCompose = "1.10.1"
 lifecycleRuntimeKtx = "2.9.0"
+material = "1.8.2"
 navigationCompose = "2.9.0"
 material3 =     "1.3.2"
-iconsExtended = "1.7.8"
 junit = "4.13.2"
 androidxJunit = "1.2.1"
 espresso = "3.6.1"
 serialization = "1.8.0"
-firebaseDatabase = "20.3.0"
+firebaseDatabase = "21.0.0"
 googleServices = "4.4.0"
+
+material3WindowSize = "1.3.2"
+
 
 
 
@@ -30,6 +32,7 @@ google-services = { id = "com.google.gms.google-services", version.ref = "google
 
 
 [libraries]
+androidx-animation = { module = "androidx.compose.animation:animation" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 
 
@@ -40,7 +43,6 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
-androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "iconsExtended" }
 
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
@@ -61,6 +63,8 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 firebase-database-ktx = { module = "com.google.firebase:firebase-database-ktx", version.ref = "firebaseDatabase" }
 firebase-common-ktx = { module = "com.google.firebase:firebase-common-ktx" }
 
+androidx-material3-window = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "material3WindowSize" }
+androidx-material = { module = "androidx.compose.material:material", version.ref = "material" }
 
 
 

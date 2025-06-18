@@ -43,7 +43,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.10"
+        kotlinCompilerExtensionVersion = "1.3.2"
     }
 }
 
@@ -54,7 +54,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.material.icons.extended)
 
     // AndroidX
     implementation(libs.androidx.core.ktx)
@@ -80,7 +79,16 @@ dependencies {
     implementation(libs.firebase.database.ktx)
     implementation(libs.firebase.common.ktx)
 
-    // Calendar
+    implementation(libs.androidx.material3.window)
+
+    // BOM для версий Compose
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.animation)
+
+
+
+    implementation(libs.androidx.material)
+
 
 
 

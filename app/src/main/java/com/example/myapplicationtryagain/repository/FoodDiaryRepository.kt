@@ -7,21 +7,20 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class FoodDiaryRepository {
-
     private val database = FirebaseDatabase.getInstance()
 
     // Получение всех записей на конкретную дату
-    suspend fun getAllEntriesForDate(userId: String, date: String): List<FoodDiaryEntry> = withContext(Dispatchers.IO) {
+    suspend fun getAllEntriesForDate(userId: String, date: String,): List<FoodDiaryEntry> = withContext(Dispatchers.IO) {
         val ref = database.getReference("food_diary/$userId/$date")
         return@withContext try {
             val snapshot = ref.get().await()
             val entries = mutableListOf<FoodDiaryEntry>()
             for (mealSnapshot in snapshot.children) {
+                val mealType = mealSnapshot.key ?: continue
                 for (entrySnapshot in mealSnapshot.children) {
                     val entry = entrySnapshot.getValue(FoodDiaryEntry::class.java)
                     if (entry != null) {
-                        // mealSnapshot.key — это тип приёма пищи, например "breakfast"
-                        entries.add(entry.copy(mealtype = mealSnapshot.key ?: "unknown"))
+                        entries.add(entry.copy(mealtype = mealType))
                     }
                 }
             }
@@ -33,21 +32,25 @@ class FoodDiaryRepository {
     }
 
     // Добавление новой записи
-    suspend fun addEntry(userId: String, date: String, mealType: String, entry: FoodDiaryEntry) = withContext(Dispatchers.IO) {
-        val id = entry.productId
-        val ref = database.getReference("food_diary/$userId/$date/$mealType/$id")
+    suspend fun addEntry(
+        userId: String,
+        date: String,
+        mealType: String,
+        entry: FoodDiaryEntry
+    ) = withContext(Dispatchers.IO) {
+        val key = entry.id
+        val ref = database.getReference("food_diary/$userId/$date/$mealType/$key")
         ref.setValue(entry).await()
     }
 
-    // Получение записей по приёму пищи (если нужно отдельно)
-    suspend fun getEntries(userId: String, date: String, mealType: String): List<FoodDiaryEntry> = withContext(Dispatchers.IO) {
-        val ref = database.getReference("food_diary/$userId/$date/$mealType")
-        return@withContext try {
-            val snapshot = ref.get().await()
-            snapshot.children.mapNotNull { it.getValue(FoodDiaryEntry::class.java) }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
-        }
+    // Удаление записи
+    suspend fun deleteEntry(
+        userId: String,
+        date: String,
+        mealType: String,
+        entryId: String
+    ) = withContext(Dispatchers.IO) {
+        val ref = database.getReference("food_diary/$userId/$date/$mealType/$entryId")
+        ref.removeValue().await()
     }
 }

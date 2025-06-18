@@ -7,5 +7,6 @@ data class FoodDiaryEntry(
     val productId: String = "", // ID продукта (если используется)
     val name: String = "", // Название продукта
     val amount: String = "", // Количество, например "100 г"
+    val reaction: String = "", // Реакции
     val imageurl: String = "" // Картинка продукта
 )

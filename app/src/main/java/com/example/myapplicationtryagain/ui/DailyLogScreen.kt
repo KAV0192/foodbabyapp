@@ -39,7 +39,7 @@ fun DailyLogScreen() {
 
     LaunchedEffect(Unit) {
         mealTypes.forEach { mealType ->
-            val entries = repository.getEntries(userId, date, mealType)
+            val entries = repository.getAllEntriesForDate(userId, date)
             entriesMap[mealType] = entries
         }
     }
@@ -99,7 +99,7 @@ fun DailyLogScreen() {
                             amount = amount
                         )
                         repository.addEntry(userId, date, selectedMealType, entry)
-                        val updated = repository.getEntries(userId, date, selectedMealType)
+                        val updated = repository.getAllEntriesForDate(userId, date)
                         entriesMap[selectedMealType] = updated
                         showAddDialog = false
                     }

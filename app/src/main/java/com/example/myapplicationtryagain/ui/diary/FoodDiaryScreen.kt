@@ -2,14 +2,17 @@ package com.example.myapplicationtryagain.ui.diary
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
 import com.example.myapplicationtryagain.data.CompactCalendar
 import com.example.myapplicationtryagain.model.FoodDiaryEntry
 import com.example.myapplicationtryagain.model.Product
@@ -17,14 +20,14 @@ import com.example.myapplicationtryagain.model.Recipe
 import com.example.myapplicationtryagain.repository.FoodDiaryRepository
 import com.example.myapplicationtryagain.ui.components.AddProductEntryBottomSheet
 import com.example.myapplicationtryagain.ui.components.AddRecipeEntryBottomSheet
-import com.google.firebase.database.FirebaseDatabase
-import kotlinx.coroutines.Dispatchers
+import com.example.myapplicationtryagain.ui.recipes.loadProductsFromFirebase
+import com.example.myapplicationtryagain.ui.recipes.loadRecipesFromFirebase
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodDiaryScreen() {
     val repository = remember { FoodDiaryRepository() }
@@ -32,32 +35,89 @@ fun FoodDiaryScreen() {
 
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var diaryEntries by remember { mutableStateOf<List<FoodDiaryEntry>>(emptyList()) }
+
+    var products by remember { mutableStateOf<List<Product>>(emptyList()) }
+    var productsLoading by remember { mutableStateOf(true) }
+
+    var recipes by remember { mutableStateOf<List<Recipe>>(emptyList()) }
+    var recipesLoading by remember { mutableStateOf(true) }
+
     var showProductSheet by remember { mutableStateOf(false) }
     var showRecipeSheet by remember { mutableStateOf(false) }
 
-    var products by remember { mutableStateOf<List<Product>>(emptyList()) }
-    var recipes by remember { mutableStateOf<List<Recipe>>(emptyList()) }
-
     val formattedDate = selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
 
-    // Загружаем продукты
-    LaunchedEffect(Unit) {
-        products = loadProductsFromFirebase()
-        recipes = loadRecipesFromFirebase()
-    }
+    // Логика для ограничения внесения записей только на +- 3 дня
+    val canAddEntries = kotlin.math.abs(
+        ChronoUnit.DAYS.between(LocalDate.now(), selectedDate)
+    ) <= 3
 
-    // Загружаем записи
+    // Загрузка записей дневника на выбранную дату
     LaunchedEffect(selectedDate) {
         diaryEntries = repository.getAllEntriesForDate("test_user", selectedDate.toString())
     }
 
+    // Загрузка продуктов и рецептов один раз при старте экрана
+    LaunchedEffect(Unit) {
+        products = loadProductsFromFirebase()
+        productsLoading = false
+
+        recipes = loadRecipesFromFirebase()
+        recipesLoading = false
+    }
+
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showProductSheet = true },
-                containerColor = Color(0xFFFFE0B2)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Добавить")
+        topBar = {
+            TopAppBar(
+                title = {
+                    Box(
+                        Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "Дневник питания",
+                            style = MaterialTheme.typography.titleLarge,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            )
+        },
+        bottomBar = {
+            if (canAddEntries) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = { showProductSheet = true },
+                        enabled = !productsLoading && products.isNotEmpty(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFE0B2))
+                    ) { Text("Добавить продукт") }
+                    Button(
+                        onClick = { showRecipeSheet = true },
+                        enabled = !recipesLoading && recipes.isNotEmpty(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFE0B2))
+                    ) { Text("Добавить блюдо") }
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Вносить записи можно только за 3 дня до и после текущей даты",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
             }
         }
     ) { padding ->
@@ -66,6 +126,7 @@ fun FoodDiaryScreen() {
                 .padding(padding)
                 .fillMaxSize()
         ) {
+            // Календарь
             CompactCalendar(
                 selectedDate = selectedDate,
                 onDateSelected = { selectedDate = it },
@@ -84,114 +145,180 @@ fun FoodDiaryScreen() {
                     .padding(vertical = 8.dp)
             )
 
-            Button(
-                onClick = { showRecipeSheet = true },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Text("Добавить блюдо")
-            }
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-            ) {
-                if (diaryEntries.isEmpty()) {
-                    item { Text("Нет записей на выбранную дату") }
-                } else {
-                    items(diaryEntries.size) { index ->
-                        val entry = diaryEntries[index]
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            elevation = CardDefaults.cardElevation(2.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text("Прием пищи: ${entry.mealtype}")
-                                Text("Продукт: ${entry.name}")
-                                Text("Количество: ${entry.amount}")
-                                if (entry.imageurl.isNotBlank()) {
-                                    // Можно добавить изображение
+            if (productsLoading || recipesLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 8.dp)
+                ) {
+                    if (diaryEntries.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillParentMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "Нет записей на выбранную дату",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.Gray,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(32.dp)
+                                )
+                            }
+                        }
+                    } else {
+                        items(diaryEntries, key = { it.id }) { entry ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 2.dp),
+                                elevation = CardDefaults.cardElevation(1.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp, horizontal = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text(
+                                            text = entry.mealtype.mealTypeToRussian(),
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                        Text(
+                                            "Название: ${entry.name}",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                        Text(
+                                            "Количество: ${entry.amount} г",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                        if (!entry.reaction.isNullOrBlank()) {
+                                            Text(
+                                                "Реакция: ${entry.reaction}",
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                        }
+                                    }
+                                    IconButton(
+                                        onClick = {
+                                            coroutineScope.launch {
+                                                repository.deleteEntry(
+                                                    userId = "test_user",
+                                                    date = entry.date,
+                                                    mealType = entry.mealtype,
+                                                    entryId = entry.id
+                                                )
+                                                diaryEntries = repository.getAllEntriesForDate(
+                                                    "test_user",
+                                                    selectedDate.toString()
+                                                )
+                                            }
+                                        },
+                                        modifier = Modifier.size(28.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Delete,
+                                            contentDescription = "Удалить",
+                                            tint = Color.Red,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            // Показываем Bottom Sheet
-            if (showProductSheet) {
-                AddProductEntryBottomSheet(
-                    products = products,
-                    selectedDate = selectedDate.toString(),
-                    onDismiss = { showProductSheet = false },
-                    onAdd = { product, amount, reaction, note ->
-                        coroutineScope.launch {
-                            val entry = FoodDiaryEntry(
-                                id = "entry_" + System.currentTimeMillis(),
-                                date = selectedDate.toString(),
-                                mealtype = "breakfast", // временно фиксируем
-                                productId = product.id.toString(),
-                                name = product.name,
-                                amount = amount,
-                                imageurl = product.imageurl ?: ""
-                            )
-                            repository.addEntry("test_user", selectedDate.toString(), "breakfast", entry)
-                            diaryEntries = repository.getAllEntriesForDate("test_user", selectedDate.toString())
+                // --- Шторка продуктов
+                if (showProductSheet && !productsLoading && products.isNotEmpty()) {
+                    AddProductEntryBottomSheet(
+                        products = products,
+                        selectedDate = selectedDate.toString(),
+                        onDismiss = { showProductSheet = false },
+                        onAdd = { prod, amount, reaction, note, mealType ->
+                            coroutineScope.launch {
+                                val entry = FoodDiaryEntry(
+                                    id = "id_${System.currentTimeMillis()}",
+                                    date = selectedDate.toString(),
+                                    mealtype = mealType,
+                                    productId = prod.id.toString(),
+                                    name = prod.name,
+                                    amount = amount,
+                                    reaction = reaction,
+                                    imageurl = prod.imageurl.orEmpty()
+                                )
+                                repository.addEntry(
+                                    userId = "test_user",
+                                    date = selectedDate.toString(),
+                                    mealType = mealType,
+                                    entry = entry
+                                )
+                                diaryEntries = repository.getAllEntriesForDate(
+                                    "test_user",
+                                    selectedDate.toString()
+                                )
+                                showProductSheet = false
+                            }
                         }
-                    }
-                )
-            }
-            if (showRecipeSheet) {
-                AddRecipeEntryBottomSheet(
-                    recipes = recipes,
-                    selectedDate = selectedDate.toString(),
-                    onDismiss = { showRecipeSheet = false },
-                    onAdd = { recipe, amount, reaction ->
-                        coroutineScope.launch {
-                            val entry = FoodDiaryEntry(
-                                id = "id_" + System.currentTimeMillis(),
-                                date = selectedDate.toString(),
-                                mealtype = "dinner", // или спросить у пользователя
-                                productId = recipe.id.toString(),
-                                name = recipe.name,
-                                amount = amount,
-                                imageurl = recipe.imgurl ?: ""
-                                // можно сохранить и reaction отдельно
-                            )
-                            repository.addEntry("test_user", selectedDate.toString(), entry.mealtype, entry)
-                            diaryEntries = repository.getAllEntriesForDate("test_user", selectedDate.toString())
-                        }
-                    }
-                )
-            }
+                    )
+                }
 
+                // --- Шторка рецептов
+                if (showRecipeSheet && !recipesLoading && recipes.isNotEmpty()) {
+                    AddRecipeEntryBottomSheet(
+                        recipes = recipes,
+                        selectedDate = selectedDate.toString(),
+                        onDismiss = { showRecipeSheet = false },
+                        onAdd = { rec, amount, reaction, mealType ->
+                            coroutineScope.launch {
+                                val entry = FoodDiaryEntry(
+                                    id = "id_${System.currentTimeMillis()}",
+                                    date = selectedDate.toString(),
+                                    mealtype = mealType,
+                                    productId = rec.id.toString(),
+                                    name = rec.name,
+                                    amount = amount,
+                                    reaction = reaction,
+                                    imageurl = rec.imgurl.orEmpty()
+                                )
+                                repository.addEntry(
+                                    userId = "test_user",
+                                    date = selectedDate.toString(),
+                                    mealType = mealType,
+                                    entry = entry
+                                )
+                                diaryEntries = repository.getAllEntriesForDate(
+                                    "test_user",
+                                    selectedDate.toString()
+                                )
+                                showRecipeSheet = false
+                            }
+                        }
+                    )
+                }
+            }
         }
     }
 }
 
-// Загрузка продуктов из Firebase
-suspend fun loadProductsFromFirebase(): List<Product> = withContext(Dispatchers.IO) {
-    val ref = FirebaseDatabase.getInstance().getReference("products")
-    return@withContext try {
-        val snapshot = ref.get().await()
-        snapshot.children.mapNotNull { it.getValue(Product::class.java) }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        emptyList()
-    }
+// Функция для конвертации типа приема пищи в русский
+fun String.mealTypeToRussian(): String = when (this) {
+    "breakfast" -> "Завтрак"
+    "lunch"     -> "Обед"
+    "dinner"    -> "Ужин"
+    "snack"     -> "Перекус"
+    else        -> this
 }
-suspend fun loadRecipesFromFirebase(): List<Recipe> = withContext(Dispatchers.IO) {
-    val ref = FirebaseDatabase.getInstance().getReference("recipes")
-    return@withContext try {
-        val snapshot = ref.get().await()
-        snapshot.children.mapNotNull { it.getValue(Recipe::class.java) }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        emptyList()
-    }
-}
-
