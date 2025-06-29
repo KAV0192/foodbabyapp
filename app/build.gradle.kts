@@ -32,6 +32,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlin {
@@ -43,7 +44,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.3.2"
+        kotlinCompilerExtensionVersion = "1.6.10"
     }
 }
 
@@ -74,6 +75,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    coreLibraryDesugaring(libs.desugar.jdk.libs) //что-то для милисекунд
 
     // FireBase
     implementation(libs.firebase.database.ktx)
@@ -88,6 +90,29 @@ dependencies {
 
 
     implementation(libs.androidx.material)
+
+    implementation(libs.core)         // core
+    implementation(libs.calendar)     // для календаря
+
+
+    implementation(libs.datetime.wheel.picker)
+    implementation(libs.kotlinx.datetime)
+
+    implementation(libs.androidx.ui.text)
+    implementation(libs.androidx.ui.text.android)
+
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.datastore.core)
+
+
+
+
+
+
+
+
+
+
 
 
 

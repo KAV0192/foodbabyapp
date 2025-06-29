@@ -69,6 +69,20 @@ fun BottomNavigationBar(navController: NavController) {
                 },
                 label = { Text("Рецепты", fontSize = 10.sp) }
             )
+            NavigationBarItem(
+                selected = currentRoute == Screen.ChildProfile.route,
+                onClick = { navController.navigate(Screen.ChildProfile.route) },
+                icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_person), // свой файл иконки
+                        contentDescription = "Профиль ребёнка",
+                        modifier = Modifier.size(20.dp),
+                        tint = Color.Unspecified
+                    )
+                },
+                label = { Text("Профиль", fontSize = 10.sp) }
+            )
+
         }
     }
 }

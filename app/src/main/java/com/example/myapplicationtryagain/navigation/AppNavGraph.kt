@@ -19,6 +19,9 @@ import com.example.myapplicationtryagain.ui.diary.FoodDiaryScreen
 import com.example.myapplicationtryagain.data.CompactCalendar
 import com.example.myapplicationtryagain.ui.selection.SelectProductScreen
 import com.example.myapplicationtryagain.ui.selection.SelectRecipeScreen
+import com.example.myapplicationtryagain.ui.profile.EditChildProfileScreen
+import com.example.myapplicationtryagain.ui.profile.VaccineCardScreen
+import com.example.myapplicationtryagain.ui.GrowthTableScreen
 import java.time.LocalDate
 
 
@@ -27,7 +30,8 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
     val bottomNavItems = listOf(
         BottomNavScreenContent.Home,
         BottomNavScreenContent.DailyLog,
-        BottomNavScreenContent.Recipes
+        BottomNavScreenContent.Recipes,
+        BottomNavScreenContent.ChildProfile
     )
 
     Scaffold(
@@ -58,6 +62,24 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
                 composable(Screen.RecipesList.route) {
                     RecipesListScreen(navController = navController)
                 }
+                composable(Screen.ChildProfile.route) {
+                    EditChildProfileScreen(
+                        navController = navController,
+                        initialProfile = null,
+                        onSave = { profile -> navController.popBackStack() },
+                        onCancel = { navController.popBackStack() },
+                        onOpenVaccineCard = { navController.navigate(Screen.VaccineCard.route) }
+                    )
+                }
+                composable(Screen.VaccineCard.route) {
+                    VaccineCardScreen(navController)
+                }
+
+                composable("growth_table") {
+                    GrowthTableScreen()
+                }
+
+
                 composable("select_product_screen/{date}/{mealType}") { backStackEntry ->
                     val dateStr = backStackEntry.arguments?.getString("date")!!
                     val mealType = backStackEntry.arguments?.getString("mealType")!!

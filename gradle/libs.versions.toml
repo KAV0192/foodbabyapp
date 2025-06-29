@@ -1,12 +1,17 @@
 [versions]
 agp = "8.9.2"
+calendar = "1.1.1"
 core = "1.1.1"
+datastoreCore = "1.1.7"
+datastorePreferences = "1.1.7"
+datetimeWheelPicker = "1.8.0"
 firebaseBom = "32.8.1"
 kotlin = "2.0.0"
 coil = "2.5.0"
 composeBom = "2025.06.00"
 coreKtx = "1.16.0"
 activityCompose = "1.10.1"
+kotlinxDatetime = "0.6.2"
 lifecycleRuntimeKtx = "2.9.0"
 material = "1.8.2"
 navigationCompose = "2.9.0"
@@ -19,6 +24,8 @@ firebaseDatabase = "21.0.0"
 googleServices = "4.4.0"
 
 material3WindowSize = "1.3.2"
+validable = "1.2.1"
+desugar = "2.1.5"
 
 
 
@@ -33,6 +40,9 @@ google-services = { id = "com.google.gms.google-services", version.ref = "google
 
 [libraries]
 androidx-animation = { module = "androidx.compose.animation:animation" }
+androidx-ui-text = { module = "androidx.compose.ui:ui-text" }
+androidx-ui-text-android = { module = "androidx.compose.ui:ui-text-android" }
+calendar = { module = "com.maxkeppeler.sheets-compose-dialogs:calendar", version.ref = "calendar" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 
 
@@ -52,12 +62,14 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 
 core = { module = "com.maxkeppeler.sheets-compose-dialogs:core", version.ref = "core" }
+datetime-wheel-picker = { module = "io.github.darkokoa:datetime-wheel-picker", version = "1.1.0-alpha03-compose1.8" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
 
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
 
 firebase-database-ktx = { module = "com.google.firebase:firebase-database-ktx", version.ref = "firebaseDatabase" }
@@ -65,6 +77,14 @@ firebase-common-ktx = { module = "com.google.firebase:firebase-common-ktx" }
 
 androidx-material3-window = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "material3WindowSize" }
 androidx-material = { module = "androidx.compose.material:material", version.ref = "material" }
+validable = { module = "com.devscast:validable", version.ref = "validable" }
+desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar" }
+
+androidx-datastore-core = { module = "androidx.datastore:datastore-core", version.ref = "datastoreCore" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+
+
+
 
 
 
